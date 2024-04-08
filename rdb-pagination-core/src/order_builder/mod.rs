@@ -28,15 +28,12 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
     #[inline]
     pub fn add_order_option_check(
         &mut self,
-        table_column: TableColumn,
+        mut table_column: TableColumn,
         unique: bool,
     ) -> Result<(), OrderOptionError> {
         if let Some(attr) = self.relationship.relationship.get(&table_column.0) {
             if attr.column_name == table_column.1 {
-                return self.add_order_option_check(
-                    (attr.foreign_table_name.clone(), attr.foreign_column_name.clone()),
-                    unique,
-                );
+                table_column = (attr.foreign_table_name.clone(), attr.foreign_column_name.clone());
             }
         } else if self.relationship.table_name == table_column.0 {
             // do nothing
