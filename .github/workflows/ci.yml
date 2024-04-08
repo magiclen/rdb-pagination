@@ -40,6 +40,7 @@ jobs:
           - 
           - --features serde
           - --features mysql
+          - --features serde --features mysql
     name: Test ${{ matrix.toolchain }} on ${{ matrix.os }} (${{ matrix.features }})
     runs-on: ${{ matrix.os }}
     steps:
@@ -59,11 +60,12 @@ jobs:
           - macos-latest
           - windows-latest
         toolchain:
-          - 1.69
+          - 1.61
         features:
           -
           - --features serde
           - --features mysql
+          - --features serde --features mysql
     name: Test ${{ matrix.toolchain }} on ${{ matrix.os }} (${{ matrix.features }})
     runs-on: ${{ matrix.os }}
     steps:
