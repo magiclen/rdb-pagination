@@ -1,0 +1,27 @@
+[package]
+name = "rdb-pagination-derive"
+version = "0.1.0"
+authors = ["Magic Len <len@magiclen.org>"]
+edition = "2021"
+rust-version = "1.56"
+repository = "https://github.com/magiclen/rdb-pagination"
+homepage = "https://magiclen.org/rdb-pagination"
+keywords = ["database", "pagination", "order", "relational", "table"]
+categories = ["rust-patterns"]
+description = "The provided crate offers a procedural macro for defining `OrderByOptions`."
+license = "MIT"
+include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+rdb-pagination-core = { version = "0.1", path = "../rdb-pagination-core", default-features = false }
+
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

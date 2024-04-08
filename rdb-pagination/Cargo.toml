@@ -1,0 +1,31 @@
+[package]
+name = "rdb-pagination"
+version = "0.1.0"
+authors = ["Magic Len <len@magiclen.org>"]
+edition = "2021"
+rust-version = "1.56"
+repository = "https://github.com/magiclen/rdb-pagination"
+homepage = "https://magiclen.org/rdb-pagination"
+keywords = ["database", "pagination", "order", "relational", "table"]
+categories = ["rust-patterns"]
+description = "SQL query extension library for handling pagination and sorting in relational databases."
+license = "MIT"
+include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
+
+[dependencies]
+rdb-pagination-core = { version = "0.1", path = "../rdb-pagination-core", default-features = false }
+rdb-pagination-derive = { version = "0.1", path = "../rdb-pagination-derive", default-features = false, optional = true }
+
+[dev-dependencies]
+educe = { version = "0.5", default-features = false, features = ["default"] }
+
+[features]
+default = ["derive"]
+
+serde = ["rdb-pagination-core/serde"]
+mysql = ["rdb-pagination-core/mysql"]
+derive = ["dep:rdb-pagination-derive"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
