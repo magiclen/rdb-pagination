@@ -1,5 +1,3 @@
-#![cfg(feature = "mysql")]
-
 use rdb_pagination_core::*;
 
 #[test]
@@ -7,6 +5,7 @@ fn limit_offset() {
     let mut buffer = String::new();
 
     {
+        #[allow(unused_variables)]
         let pagination_options =
             PaginationOptions {
                 page: 1, items_per_page: 0, order_by: ()
@@ -19,6 +18,7 @@ fn limit_offset() {
     buffer.clear();
 
     {
+        #[allow(unused_variables)]
         let pagination_options =
             PaginationOptions {
                 page: 1, items_per_page: 20, order_by: ()
@@ -31,6 +31,7 @@ fn limit_offset() {
     buffer.clear();
 
     {
+        #[allow(unused_variables)]
         let pagination_options =
             PaginationOptions {
                 page: 3, items_per_page: 20, order_by: ()
@@ -44,8 +45,6 @@ fn limit_offset() {
 #[test]
 fn pagination() {
     let pagination = Pagination::new().items_per_page(20).total_items(50).page(5);
-
-    println!("{pagination:?}");
 
     assert_eq!(3, pagination.get_total_pages());
     assert_eq!(3, pagination.get_page());
@@ -117,6 +116,7 @@ fn order_by() {
             );
         }
 
+        #[allow(unused_variables)]
         let (joins, order_by_components) = order_builder.build();
 
         let mut buffer = String::new();
@@ -185,6 +185,7 @@ fn order_by() {
             );
         }
 
+        #[allow(unused_variables)]
         let (joins, order_by_components) = order_builder.build();
 
         let mut buffer = String::new();
@@ -243,6 +244,7 @@ fn order_by() {
             );
         }
 
+        #[allow(unused_variables)]
         let (joins, order_by_components) = order_builder.build();
 
         let mut buffer = String::new();
@@ -260,5 +262,59 @@ fn order_by() {
                 &mut buffer
             )
         );
+    }
+
+    {
+        let order_options = [
+            ((Name::Static("component_general_type"), Name::Static("id")), true, 103i8),
+            ((Name::Static("component_general_type"), Name::Static("name")), true, 0),
+            ((Name::Static("component_general_type"), Name::Static("code")), true, 0),
+            ((Name::Static("component_general_type"), Name::Static("order")), false, 102),
+            ((Name::Static("component_vendor"), Name::Static("id")), true, 105),
+            ((Name::Static("component_vendor"), Name::Static("name")), true, 0),
+            ((Name::Static("component_vendor"), Name::Static("order")), false, 104),
+            ((Name::Static("component_type"), Name::Static("id")), true, 106),
+            ((Name::Static("component_type"), Name::Static("order")), false, 101),
+            ((Name::Static("component"), Name::Static("id")), true, 107),
+        ];
+
+        let mut order_builder = OrderBuilder::new(relationship.clone(), order_options.len());
+
+        for (table_column, unique, order_method) in order_options.iter() {
+            order_builder.add_order_option(
+                (table_column.0.clone(), table_column.1.clone()),
+                *unique,
+                (*order_method).into(),
+            );
+        }
+
+        let (mut joins, _) = order_builder.build();
+
+        let result = joins.add_join(SqlJoin {
+            other_table_name:  Name::Static("component_type"),
+            other_column_name: Name::Static("id"),
+            real_table_name:   None,
+            using_table_name:  Name::Static("component"),
+            using_column_name: Name::Static("component_type_id"),
+        });
+        assert!(matches!(result, Ok(false)));
+
+        let result = joins.add_join(SqlJoin {
+            other_table_name:  Name::Static("component_type2"),
+            other_column_name: Name::Static("id"),
+            real_table_name:   None,
+            using_table_name:  Name::Static("component"),
+            using_column_name: Name::Static("component_type_id"),
+        });
+        assert!(matches!(result, Ok(true)));
+
+        let result = joins.add_join(SqlJoin {
+            other_table_name:  Name::Static("component_type"),
+            other_column_name: Name::Static("id"),
+            real_table_name:   None,
+            using_table_name:  Name::Static("component"),
+            using_column_name: Name::Static("id"),
+        });
+        assert!(result.is_err());
     }
 }

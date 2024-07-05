@@ -1,7 +1,13 @@
+use std::{
+    error::Error,
+    fmt,
+    fmt::{Display, Formatter},
+};
+
 use crate::{ColumnName, TableColumnAttributes, TableName};
 
 /// Struct for generating the `JOIN` clause.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SqlJoin {
     pub other_table_name:  TableName,
     pub other_column_name: ColumnName,
@@ -96,3 +102,51 @@ impl SqlJoin {
         unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
     }
 }
+
+/// Operators for `SqlJoin`s.
+pub trait SqlJoinsOps {
+    /// Insert a `SqlJoin` if it does not exist. Return `Ok(true)` if a new `SqlJoin` has been pushed.
+    fn add_join(&mut self, join: SqlJoin) -> Result<bool, SqlJoinsInsertError>;
+}
+
+impl SqlJoinsOps for Vec<SqlJoin> {
+    #[inline]
+    fn add_join(&mut self, join: SqlJoin) -> Result<bool, SqlJoinsInsertError> {
+        if let Some(existing_join) = self
+            .iter()
+            .find(|existing_join| existing_join.other_table_name == join.other_table_name)
+        {
+            if existing_join.other_column_name != join.other_column_name
+                || existing_join.real_table_name != join.real_table_name
+                || existing_join.using_table_name != join.using_table_name
+                || existing_join.using_column_name != join.using_column_name
+            {
+                Err(SqlJoinsInsertError::OtherTableNameConflict)
+            } else {
+                Ok(false)
+            }
+        } else {
+            self.push(join);
+
+            Ok(true)
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum SqlJoinsInsertError {
+    OtherTableNameConflict,
+}
+
+impl Display for SqlJoinsInsertError {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::OtherTableNameConflict => {
+                f.write_str("other_table_name exists but the join clauses are not exactly the same")
+            },
+        }
+    }
+}
+
+impl Error for SqlJoinsInsertError {}
