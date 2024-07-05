@@ -1,6 +1,6 @@
 [package]
 name = "rdb-pagination-derive"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Magic Len <len@magiclen.org>"]
 edition = "2021"
 rust-version = "1.61"
@@ -16,7 +16,7 @@ include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 proc-macro = true
 
 [dependencies]
-rdb-pagination-core = { version = "0.1", path = "../rdb-pagination-core", default-features = false }
+rdb-pagination-core = { version = "0.2", path = "../rdb-pagination-core", default-features = false }
 
 syn = { version = "2", features = ["full"] }
 quote = "1"

@@ -46,7 +46,7 @@ impl SqlJoin {
 
         if let Some(real_table_name) = &self.real_table_name {
             s.write_fmt(format_args!(
-                "JOIN `{real_table_name}` AS `{other_table_name}` ON \
+                "LEFT JOIN `{real_table_name}` AS `{other_table_name}` ON \
                  `{other_table_name}`.`{other_column_name}` = \
                  `{using_table_name}`.`{using_column_name}`",
                 other_table_name = self.other_table_name,
@@ -57,7 +57,7 @@ impl SqlJoin {
             .unwrap()
         } else {
             s.write_fmt(format_args!(
-                "JOIN `{other_table_name}` ON `{other_table_name}`.`{other_column_name}` = \
+                "LEFT JOIN `{other_table_name}` ON `{other_table_name}`.`{other_column_name}` = \
                  `{using_table_name}`.`{using_column_name}`",
                 other_table_name = self.other_table_name,
                 other_column_name = self.other_column_name,

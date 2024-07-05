@@ -20,6 +20,7 @@ pub struct Pagination {
 }
 
 impl Pagination {
+    #[allow(clippy::new_without_default)]
     /// Create a new `Pagination`.
     ///
     /// ```rust

@@ -65,7 +65,7 @@ let (joins, order_by_components) = pagination_options.order_by.to_sql();
 
 # #[cfg(feature = "mysql")]
 assert_eq!(
-    "JOIN `component_type` ON `component_type`.`id` = `component`.`component_type_id`\nJOIN `component_vendor` ON `component_vendor`.`id` = `component_type`.`component_vendor_id`",
+    "LEFT JOIN `component_type` ON `component_type`.`id` = `component`.`component_type_id`\nLEFT JOIN `component_vendor` ON `component_vendor`.`id` = `component_type`.`component_vendor_id`",
     SqlJoin::format_mysql_join_clauses(&joins, &mut buffer)
 );
 
