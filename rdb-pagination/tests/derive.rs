@@ -53,6 +53,9 @@ fn component() {
     #[cfg(feature = "mysql")]
     assert_eq!("LIMIT 20 OFFSET 40", pagination_options.to_mysql_limit_offset(&mut buffer));
 
+    #[cfg(feature = "sqlite")]
+    assert_eq!("LIMIT 20 OFFSET 40", pagination_options.to_sqlite_limit_offset(&mut buffer));
+
     buffer.clear();
 
     let (joins, order_by_components) = pagination_options.order_by.to_sql();
@@ -66,6 +69,15 @@ fn component() {
         SqlJoin::format_mysql_join_clauses(&joins, &mut buffer)
     );
 
+    #[cfg(feature = "sqlite")]
+    assert_eq!(
+        "LEFT JOIN `component_type` ON `component_type`.`id` = \
+         `component`.`component_type_id`\nLEFT JOIN `component_general_type` ON \
+         `component_general_type`.`id` = `component_type`.`component_general_type_id`\nLEFT JOIN \
+         `component_vendor` ON `component_vendor`.`id` = `component_type`.`component_vendor_id`",
+        SqlJoin::format_sqlite_join_clauses(&joins, &mut buffer)
+    );
+
     buffer.clear();
 
     #[cfg(feature = "mysql")]
@@ -75,5 +87,14 @@ fn component() {
          `component_type`.`component_vendor_id` ASC, `component`.`component_type_id` ASC, \
          `component`.`id` ASC",
         SqlOrderByComponent::format_mysql_order_by_components(&order_by_components, &mut buffer)
+    );
+
+    #[cfg(feature = "sqlite")]
+    assert_eq!(
+        "ORDER BY `component_type`.`order` ASC, `component_general_type`.`order` ASC, \
+         `component_type`.`component_general_type_id` ASC, `component_vendor`.`order` ASC, \
+         `component_type`.`component_vendor_id` ASC, `component`.`component_type_id` ASC, \
+         `component`.`id` ASC",
+        SqlOrderByComponent::format_sqlite_order_by_components(&order_by_components, &mut buffer)
     );
 }

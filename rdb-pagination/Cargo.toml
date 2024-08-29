@@ -1,6 +1,6 @@
 [package]
 name = "rdb-pagination"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Magic Len <len@magiclen.org>"]
 edition = "2021"
 rust-version = "1.61"
@@ -13,7 +13,7 @@ license = "MIT"
 include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 
 [dependencies]
-rdb-pagination-core = { version = "0.2.1", path = "../rdb-pagination-core", default-features = false }
+rdb-pagination-core = { version = "0.2.2", path = "../rdb-pagination-core", default-features = false }
 rdb-pagination-derive = { version = "0.2", path = "../rdb-pagination-derive", default-features = false, optional = true }
 
 [dev-dependencies]
@@ -24,6 +24,7 @@ default = ["derive"]
 
 serde = ["rdb-pagination-core/serde"]
 mysql = ["rdb-pagination-core/mysql"]
+sqlite = ["rdb-pagination-core/sqlite"]
 derive = ["dep:rdb-pagination-derive"]
 
 [package.metadata.docs.rs]

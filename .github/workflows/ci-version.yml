@@ -25,6 +25,8 @@ jobs:
           - --features serde
           - --features mysql
           - --features serde --features mysql
+          - --features sqlite
+          - --features serde --features sqlite
     name: Test ${{ matrix.toolchain }} on ${{ matrix.os }} (${{ matrix.features }})
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,6 +52,8 @@ jobs:
           - --features serde
           - --features mysql
           - --features serde --features mysql
+          - --features sqlite
+          - --features serde --features sqlite
     name: Test ${{ matrix.toolchain }} on ${{ matrix.os }} (${{ matrix.features }})
     runs-on: ${{ matrix.os }}
     steps:

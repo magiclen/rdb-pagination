@@ -128,22 +128,9 @@ impl<T: OrderByOptions> PaginationOptions<T> {
     }
 }
 
-#[cfg(feature = "mysql")]
+#[cfg(any(feature = "mysql", feature = "sqlite"))]
 impl<T: OrderByOptions> PaginationOptions<T> {
-    /// Generate a `LIMIT with OFFSET` clause for MySQL.
-    ///
-    /// If `limit()` is `Some(n)`,
-    ///
-    /// ```sql
-    /// LIMIT <limit()> [OFFSET <offset()>]
-    /// ```
-    ///
-    /// If `offset()` is not zero,
-    ///
-    /// ```sql
-    /// [LIMIT <limit()>] OFFSET <offset()>
-    /// ```
-    pub fn to_mysql_limit_offset<'a>(&self, s: &'a mut String) -> &'a str {
+    fn to_sql_limit_offset<'a>(&self, s: &'a mut String) -> &'a str {
         use std::{fmt::Write, str::from_utf8_unchecked};
 
         let len = s.len();
@@ -165,6 +152,48 @@ impl<T: OrderByOptions> PaginationOptions<T> {
         }
 
         unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
+    }
+}
+
+#[cfg(feature = "mysql")]
+impl<T: OrderByOptions> PaginationOptions<T> {
+    /// Generate a `LIMIT with OFFSET` clause for MySQL.
+    ///
+    /// If `limit()` is `Some(n)`,
+    ///
+    /// ```sql
+    /// LIMIT <limit()> [OFFSET <offset()>]
+    /// ```
+    ///
+    /// If `offset()` is not zero,
+    ///
+    /// ```sql
+    /// [LIMIT <limit()>] OFFSET <offset()>
+    /// ```
+    #[inline]
+    pub fn to_mysql_limit_offset<'a>(&self, s: &'a mut String) -> &'a str {
+        self.to_sql_limit_offset(s)
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl<T: OrderByOptions> PaginationOptions<T> {
+    /// Generate a `LIMIT with OFFSET` clause for SQLite.
+    ///
+    /// If `limit()` is `Some(n)`,
+    ///
+    /// ```sql
+    /// LIMIT <limit()> [OFFSET <offset()>]
+    /// ```
+    ///
+    /// If `offset()` is not zero,
+    ///
+    /// ```sql
+    /// [LIMIT <limit()>] OFFSET <offset()>
+    /// ```
+    #[inline]
+    pub fn to_sqlite_limit_offset<'a>(&self, s: &'a mut String) -> &'a str {
+        self.to_sql_limit_offset(s)
     }
 }
 

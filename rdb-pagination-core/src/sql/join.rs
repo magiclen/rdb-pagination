@@ -30,22 +30,9 @@ impl SqlJoin {
     }
 }
 
-#[cfg(feature = "mysql")]
+#[cfg(any(feature = "mysql", feature = "sqlite"))]
 impl SqlJoin {
-    /// Generate a `JOIN` clause for MySQL.
-    ///
-    /// If `real_table_name` exists,
-    ///
-    /// ```sql
-    /// JOIN `<real_table_name>` AS `<other_table_name>` ON `<other_table_name>`.`<other_column_name>` = `<using_table_name>`.`<using_column_name>`
-    /// ```
-    ///
-    /// or
-    ///
-    /// ```sql
-    /// JOIN `<other_table_name>` ON `<other_table_name>`.`<other_column_name>` = `<using_table_name>`.`<using_column_name>`
-    /// ```
-    pub fn to_mysql_join_clause<'a>(&self, s: &'a mut String) -> &'a str {
+    fn to_sql_join_clause<'a>(&self, s: &'a mut String) -> &'a str {
         use std::{fmt::Write, str::from_utf8_unchecked};
 
         let len = s.len();
@@ -76,10 +63,7 @@ impl SqlJoin {
         unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
     }
 
-    /// Generate `JOIN` clauses for MySQL.
-    ///
-    /// Concatenate a series of `SqlJoin`s with `\n`.
-    pub fn format_mysql_join_clauses<'a>(joins: &[SqlJoin], s: &'a mut String) -> &'a str {
+    fn format_sql_join_clauses<'a>(joins: &[SqlJoin], s: &'a mut String) -> &'a str {
         use std::str::from_utf8_unchecked;
 
         if joins.is_empty() {
@@ -89,7 +73,7 @@ impl SqlJoin {
         let len = s.len();
 
         for join in joins {
-            join.to_mysql_join_clause(s);
+            join.to_sql_join_clause(s);
             s.push('\n');
         }
 
@@ -100,6 +84,64 @@ impl SqlJoin {
         }
 
         unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
+    }
+}
+
+#[cfg(feature = "mysql")]
+impl SqlJoin {
+    /// Generate a `JOIN` clause for MySQL.
+    ///
+    /// If `real_table_name` exists,
+    ///
+    /// ```sql
+    /// JOIN `<real_table_name>` AS `<other_table_name>` ON `<other_table_name>`.`<other_column_name>` = `<using_table_name>`.`<using_column_name>`
+    /// ```
+    ///
+    /// or
+    ///
+    /// ```sql
+    /// JOIN `<other_table_name>` ON `<other_table_name>`.`<other_column_name>` = `<using_table_name>`.`<using_column_name>`
+    /// ```
+    #[inline]
+    pub fn to_mysql_join_clause<'a>(&self, s: &'a mut String) -> &'a str {
+        self.to_sql_join_clause(s)
+    }
+
+    /// Generate `JOIN` clauses for MySQL.
+    ///
+    /// Concatenate a series of `SqlJoin`s with `\n`.
+    #[inline]
+    pub fn format_mysql_join_clauses<'a>(joins: &[SqlJoin], s: &'a mut String) -> &'a str {
+        Self::format_sql_join_clauses(joins, s)
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl SqlJoin {
+    /// Generate a `JOIN` clause for SQLite.
+    ///
+    /// If `real_table_name` exists,
+    ///
+    /// ```sql
+    /// JOIN `<real_table_name>` AS `<other_table_name>` ON `<other_table_name>`.`<other_column_name>` = `<using_table_name>`.`<using_column_name>`
+    /// ```
+    ///
+    /// or
+    ///
+    /// ```sql
+    /// JOIN `<other_table_name>` ON `<other_table_name>`.`<other_column_name>` = `<using_table_name>`.`<using_column_name>`
+    /// ```
+    #[inline]
+    pub fn to_sqlite_join_clause<'a>(&self, s: &'a mut String) -> &'a str {
+        self.to_sql_join_clause(s)
+    }
+
+    /// Generate `JOIN` clauses for SQLite.
+    ///
+    /// Concatenate a series of `SqlJoin`s with `\n`.
+    #[inline]
+    pub fn format_sqlite_join_clauses<'a>(joins: &[SqlJoin], s: &'a mut String) -> &'a str {
+        Self::format_sql_join_clauses(joins, s)
     }
 }
 
