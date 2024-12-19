@@ -173,6 +173,17 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
                     let column_name = option.table_column.1.as_ref();
                     let unique = option.unique;
 
+                    let null_strategy =
+                        if let Some(nulls_first_or_last) = option.nulls_first_or_last {
+                            if nulls_first_or_last {
+                                quote!(rdb_pagination_prelude::NullStrategy::First)
+                            } else {
+                                quote!(rdb_pagination_prelude::NullStrategy::Last)
+                            }
+                        } else {
+                            quote!(rdb_pagination_prelude::NullStrategy::Default)
+                        };
+
                     let order_method = if let Some(ident) = &field.ident {
                         quote!(self.#ident)
                     } else {
@@ -185,6 +196,7 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
                         order_builder.add_order_option(
                             (rdb_pagination_prelude::Name::Static(#table_name), rdb_pagination_prelude::Name::Static(#column_name)),
                             #unique,
+                            #null_strategy,
                             #order_method,
                         );
                     });

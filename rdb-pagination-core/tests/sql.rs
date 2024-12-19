@@ -121,6 +121,7 @@ fn order_by() {
             order_builder.add_order_option(
                 (table_column.0.clone(), table_column.1.clone()),
                 *unique,
+                NullStrategy::Default,
                 (*order_method).into(),
             );
         }
@@ -212,6 +213,7 @@ fn order_by() {
             order_builder.add_order_option(
                 (table_column.0.clone(), table_column.1.clone()),
                 *unique,
+                NullStrategy::Default,
                 (*order_method).into(),
             );
         }
@@ -274,6 +276,7 @@ fn order_by() {
             order_builder.add_order_option(
                 (table_column.0.clone(), table_column.1.clone()),
                 *unique,
+                NullStrategy::Default,
                 (*order_method).into(),
             );
         }
@@ -318,6 +321,7 @@ fn order_by() {
             order_builder.add_order_option(
                 (table_column.0.clone(), table_column.1.clone()),
                 *unique,
+                NullStrategy::Default,
                 (*order_method).into(),
             );
         }
@@ -351,4 +355,66 @@ fn order_by() {
         });
         assert!(result.is_err());
     }
+}
+
+#[test]
+fn null_strategy() {
+    let relationship = Relationship::new(Name::Static("component_general_type"));
+
+    let order_options = [
+        (
+            (Name::Static("component_general_type"), Name::Static("id")),
+            true,
+            NullStrategy::Last,
+            102i8,
+        ),
+        (
+            (Name::Static("component_general_type"), Name::Static("name")),
+            true,
+            NullStrategy::Default,
+            0,
+        ),
+        (
+            (Name::Static("component_general_type"), Name::Static("code")),
+            true,
+            NullStrategy::Last,
+            0,
+        ),
+        (
+            (Name::Static("component_general_type"), Name::Static("order")),
+            false,
+            NullStrategy::First,
+            101,
+        ),
+    ];
+
+    let mut order_builder = OrderBuilder::new(relationship.clone(), order_options.len());
+
+    for (table_column, unique, null_strategy, order_method) in order_options.into_iter() {
+        order_builder.add_order_option(
+            (table_column.0, table_column.1),
+            unique,
+            null_strategy,
+            order_method.into(),
+        );
+    }
+
+    #[allow(unused_variables)]
+    let (_joins, order_by_components) = order_builder.build();
+
+    let mut buffer = String::new();
+
+    #[cfg(feature = "mysql")]
+    assert_eq!(
+        "ORDER BY `component_general_type`.`order` IS NULL, `component_general_type`.`order` ASC, \
+         `component_general_type`.`id` IS NOT NULL, `component_general_type`.`id` ASC",
+        SqlOrderByComponent::format_mysql_order_by_components(&order_by_components, &mut buffer)
+    );
+
+    #[cfg(feature = "sqlite")]
+    assert_eq!(
+        "ORDER BY `component_general_type`.`order` IS NULL, `component_general_type`.`order` ASC, \
+         `component_general_type`.`id` IS NOT NULL, `component_general_type`.`id` ASC",
+        SqlOrderByComponent::format_sqlite_order_by_components(&order_by_components, &mut buffer)
+    );
 }

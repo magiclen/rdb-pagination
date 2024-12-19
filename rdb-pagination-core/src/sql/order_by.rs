@@ -1,11 +1,19 @@
 use crate::{ColumnName, OrderType, TableName};
 
+#[derive(Debug, Clone)]
+pub enum NullStrategy {
+    Default,
+    First,
+    Last,
+}
+
 /// Struct for generating the `ORDER BY` clause.
 #[derive(Debug, Clone)]
 pub struct SqlOrderByComponent {
-    pub table_name:  TableName,
-    pub column_name: ColumnName,
-    pub order_type:  OrderType,
+    pub table_name:    TableName,
+    pub column_name:   ColumnName,
+    pub order_type:    OrderType,
+    pub null_strategy: NullStrategy,
 }
 
 #[cfg(any(feature = "mysql", feature = "sqlite"))]
@@ -14,6 +22,26 @@ impl SqlOrderByComponent {
         use std::{fmt::Write, str::from_utf8_unchecked};
 
         let len = s.len();
+
+        match self.null_strategy {
+            NullStrategy::Default => (),
+            NullStrategy::First => {
+                s.write_fmt(format_args!(
+                    "`{table_name}`.`{column_name}` IS NULL, ",
+                    table_name = self.table_name,
+                    column_name = self.column_name,
+                ))
+                .unwrap();
+            },
+            NullStrategy::Last => {
+                s.write_fmt(format_args!(
+                    "`{table_name}`.`{column_name}` IS NOT NULL, ",
+                    table_name = self.table_name,
+                    column_name = self.column_name,
+                ))
+                .unwrap();
+            },
+        }
 
         s.write_fmt(format_args!(
             "`{table_name}`.`{column_name}` {order_type}",

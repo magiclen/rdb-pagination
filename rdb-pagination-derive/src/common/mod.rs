@@ -44,9 +44,11 @@ impl Parse for Join {
 
 #[derive(Debug)]
 pub(crate) struct OrderByOption {
-    pub(crate) table_column: TableColumn,
-    pub(crate) unique:       bool,
-    pub(crate) span:         Span,
+    pub(crate) table_column:        TableColumn,
+    pub(crate) unique:              bool,
+    /// `Some(true)` means **NULL FIRST**; `Some(false)` means **NULL LAST**.
+    pub(crate) nulls_first_or_last: Option<bool>,
+    pub(crate) span:                Span,
 }
 
 impl Parse for OrderByOption {
@@ -58,22 +60,33 @@ impl Parse for OrderByOption {
 
         let args_len = args.len();
 
-        if args_len != 1 && args_len != 2 {
-            return Err(syn::Error::new(input.span(), "expected 1 or 2 argumenets"));
+        if !(1..=3).contains(&args_len) {
+            return Err(syn::Error::new(input.span(), "expected 1, 2 or 3 arguments"));
         }
 
         let table_column = expr_2_two_string_tuple(&args[0])?;
 
-        let unique = if args_len == 1 {
-            false
-        } else {
-            expr_2_unique(&args[1])?;
-            true
+        let (unique, nulls_first_or_last) = match args_len {
+            1 => (false, None),
+            2 => {
+                if expr_2_unique(&args[1]).is_ok() {
+                    (true, None)
+                } else {
+                    (false, Some(expr_2_nulls_first_or_last(&args[1], false)?))
+                }
+            },
+            3 => {
+                expr_2_unique(&args[1])?;
+
+                (true, Some(expr_2_nulls_first_or_last(&args[2], true)?))
+            },
+            _ => unreachable!(),
         };
 
         Ok(Self {
             table_column: (Name::Dynamic(table_column.0), Name::Dynamic(table_column.1)),
             unique,
+            nulls_first_or_last,
             span,
         })
     }
@@ -128,6 +141,28 @@ pub(crate) fn expr_2_unique(expr: &Expr) -> syn::Result<()> {
     }
 
     Err(syn::Error::new(expr.span(), "expected `unique`"))
+}
+
+/// Return `true` if it is `nulls_first`; return `false` if it is `nulls_last`.
+#[inline]
+pub(crate) fn expr_2_nulls_first_or_last(expr: &Expr, after_unique: bool) -> syn::Result<bool> {
+    if let Expr::Path(path) = expr {
+        if let Some(ident) = path.path.get_ident() {
+            match ident.to_string().as_str() {
+                "nulls_first" => return Ok(true),
+                "nulls_last" => return Ok(false),
+                _ => (),
+            }
+        }
+    }
+
+    let message = if after_unique {
+        "expected `nulls_first` or `nulls_last`"
+    } else {
+        "expected `unique`, `nulls_first` or `nulls_last`"
+    };
+
+    Err(syn::Error::new(expr.span(), message))
 }
 
 #[inline]

@@ -5,15 +5,15 @@ use std::collections::HashSet;
 pub use errors::*;
 
 use crate::{
-    OrderMethod, OrderMethodValue, OrderType, Relationship, SqlJoin, SqlOrderByComponent,
-    TableColumn,
+    NullStrategy, OrderMethod, OrderMethodValue, OrderType, Relationship, SqlJoin,
+    SqlOrderByComponent, TableColumn,
 };
 
 #[doc(hidden)]
 #[derive(Debug, Clone)]
 pub struct OrderBuilder<T: OrderMethodValue = i8> {
     relationship:  Relationship,
-    order_options: Vec<(TableColumn, bool, OrderMethod<T>)>,
+    order_options: Vec<(TableColumn, bool, NullStrategy, OrderMethod<T>)>,
 }
 
 impl<T: OrderMethodValue> OrderBuilder<T> {
@@ -45,7 +45,12 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
             return Err(OrderOptionError::TableColumnDuplicate);
         }
 
-        self.order_options.push((table_column, unique, OrderMethod(T::one())));
+        self.order_options.push((
+            table_column,
+            unique,
+            NullStrategy::Default,
+            OrderMethod(T::one()),
+        ));
 
         Ok(())
     }
@@ -55,6 +60,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
         &mut self,
         table_column: TableColumn,
         unique: bool,
+        null_strategy: NullStrategy,
         order_method: OrderMethod<T>,
     ) {
         if order_method.0 != T::zero() {
@@ -63,12 +69,12 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
                     value.table_name == table_column.0 && value.column_name == table_column.1
                 });
 
-            self.order_options.push((table_column, unique, order_method));
+            self.order_options.push((table_column, unique, null_strategy, order_method));
         }
     }
 
     pub fn build(mut self) -> (Vec<SqlJoin>, Vec<SqlOrderByComponent>) {
-        self.order_options.sort_by(|(_, _, a), (_, _, b)| a.0.abs().cmp(&b.0.abs()));
+        self.order_options.sort_by(|(_, _, _, a), (_, _, _, b)| a.0.abs().cmp(&b.0.abs()));
 
         {
             // remove unnecessary options
@@ -79,7 +85,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
 
             while i < self.order_options.len() {
                 let remove = {
-                    let ((table_name, _), unique, _) = &self.order_options[i];
+                    let ((table_name, _), unique, ..) = &self.order_options[i];
 
                     let mut remove = false;
 
@@ -128,8 +134,8 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
         let v = self
             .order_options
             .into_iter()
-            .map(|((table_name, column_name), _, order_method)| {
-                (table_name, column_name, OrderType::from_order_method(order_method))
+            .map(|((table_name, column_name), _, null_strategy, order_method)| {
+                (table_name, column_name, null_strategy, OrderType::from_order_method(order_method))
             })
             .collect::<Vec<_>>();
 
@@ -139,7 +145,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
         let mut sql_joins = Vec::new();
         let mut sql_order_by_units = Vec::new();
 
-        for (table_name, column_name, order_type) in v {
+        for (table_name, column_name, null_strategy, order_type) in v {
             let related_table_names = self.relationship.get_related_tables(&table_name);
 
             for related_table_name in
@@ -160,6 +166,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
                 table_name,
                 column_name,
                 order_type,
+                null_strategy,
             });
         }
 
