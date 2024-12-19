@@ -402,6 +402,7 @@ fn null_strategy() {
     #[allow(unused_variables)]
     let (_joins, order_by_components) = order_builder.build();
 
+    #[allow(unused_variables)]
     #[allow(unused_mut)]
     let mut buffer = String::new();
 
