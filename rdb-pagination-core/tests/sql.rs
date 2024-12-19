@@ -408,15 +408,15 @@ fn null_strategy() {
 
     #[cfg(feature = "mysql")]
     assert_eq!(
-        "ORDER BY `component_general_type`.`order` IS NULL, `component_general_type`.`order` ASC, \
-         `component_general_type`.`id` IS NOT NULL, `component_general_type`.`id` ASC",
+        "ORDER BY `component_general_type`.`order` IS NOT NULL, `component_general_type`.`order` \
+         ASC, `component_general_type`.`id` IS NULL, `component_general_type`.`id` ASC",
         SqlOrderByComponent::format_mysql_order_by_components(&order_by_components, &mut buffer)
     );
 
     #[cfg(feature = "sqlite")]
     assert_eq!(
-        "ORDER BY `component_general_type`.`order` IS NULL, `component_general_type`.`order` ASC, \
-         `component_general_type`.`id` IS NOT NULL, `component_general_type`.`id` ASC",
+        "ORDER BY `component_general_type`.`order` IS NOT NULL, `component_general_type`.`order` \
+         ASC, `component_general_type`.`id` IS NULL, `component_general_type`.`id` ASC",
         SqlOrderByComponent::format_sqlite_order_by_components(&order_by_components, &mut buffer)
     );
 }

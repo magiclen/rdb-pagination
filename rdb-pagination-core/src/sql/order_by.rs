@@ -27,7 +27,7 @@ impl SqlOrderByComponent {
             NullStrategy::Default => (),
             NullStrategy::First => {
                 s.write_fmt(format_args!(
-                    "`{table_name}`.`{column_name}` IS NULL, ",
+                    "`{table_name}`.`{column_name}` IS NOT NULL, ",
                     table_name = self.table_name,
                     column_name = self.column_name,
                 ))
@@ -35,7 +35,7 @@ impl SqlOrderByComponent {
             },
             NullStrategy::Last => {
                 s.write_fmt(format_args!(
-                    "`{table_name}`.`{column_name}` IS NOT NULL, ",
+                    "`{table_name}`.`{column_name}` IS NULL, ",
                     table_name = self.table_name,
                     column_name = self.column_name,
                 ))

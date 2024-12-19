@@ -75,7 +75,7 @@ buffer.clear();
 
 # #[cfg(feature = "mysql")]
 assert_eq!(
-    "ORDER BY `component_type`.`component_general_type_id` DESC, `component_type`.`order` ASC, `component_vendor`.`order` ASC, `component_type`.`component_vendor_id` IS NULL, `component_type`.`component_vendor_id` ASC, `component`.`component_type_id` ASC, `component`.`id` ASC",
+    "ORDER BY `component_type`.`component_general_type_id` DESC, `component_type`.`order` ASC, `component_vendor`.`order` ASC, `component_type`.`component_vendor_id` IS NOT NULL, `component_type`.`component_vendor_id` ASC, `component`.`component_type_id` ASC, `component`.`id` ASC",
     SqlOrderByComponent::format_mysql_order_by_components(&order_by_components, &mut buffer)
 );
 # }
