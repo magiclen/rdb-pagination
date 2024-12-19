@@ -8,7 +8,7 @@ use proc_macro2::Span;
 #[derive(Debug)]
 struct DisplayStringSlice<'a>(&'a [&'static str]);
 
-impl<'a> Display for DisplayStringSlice<'a> {
+impl Display for DisplayStringSlice<'_> {
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for &s in self.0 {

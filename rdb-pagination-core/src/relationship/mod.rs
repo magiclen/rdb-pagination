@@ -69,7 +69,7 @@ impl Relationship {
     }
 
     #[inline]
-    pub fn get_related_tables<'a>(&'a self, mut table_name: &'a TableName) -> Vec<&Name> {
+    pub fn get_related_tables<'a>(&'a self, mut table_name: &'a TableName) -> Vec<&'a Name> {
         let mut v = Vec::new();
 
         while table_name.ne(&self.table_name) {
