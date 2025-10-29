@@ -58,14 +58,14 @@ let pagination_options = PaginationOptions::default().page(3).items_per_page(20)
 
 let mut buffer = String::new();
 
-# #[cfg(feature = "mysql")]
 assert_eq!("LIMIT 20 OFFSET 40", pagination_options.to_mysql_limit_offset(&mut buffer));
+assert_eq!("OFFSET 40 ROWS FETCH NEXT 20 ROWS ONLY", pagination_options.to_mssql_limit_offset(&mut buffer));
+assert_eq!("WHERE [rn] BETWEEN 41 AND 60", pagination_options.to_mssql2008_limit_offset("rn", &mut buffer));
 
 buffer.clear();
 
 let (joins, order_by_components) = pagination_options.order_by.to_sql();
 
-# #[cfg(feature = "mysql")]
 assert_eq!(
     "LEFT JOIN `component_type` ON `component_type`.`id` = `component`.`component_type_id`\nLEFT JOIN `component_vendor` ON `component_vendor`.`id` = `component_type`.`component_vendor_id`",
     SqlJoin::format_mysql_join_clauses(&joins, &mut buffer)
@@ -73,7 +73,6 @@ assert_eq!(
 
 buffer.clear();
 
-# #[cfg(feature = "mysql")]
 assert_eq!(
     "ORDER BY `component_type`.`component_general_type_id` DESC, `component_type`.`order` ASC, `component_vendor`.`order` ASC, `component_type`.`component_vendor_id` IS NOT NULL, `component_type`.`component_vendor_id` ASC, `component`.`component_type_id` ASC, `component`.`id` ASC",
     SqlOrderByComponent::format_mysql_order_by_components(&order_by_components, &mut buffer)

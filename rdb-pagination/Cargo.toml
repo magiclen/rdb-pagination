@@ -25,6 +25,8 @@ default = ["derive"]
 serde = ["rdb-pagination-core/serde"]
 mysql = ["rdb-pagination-core/mysql"]
 sqlite = ["rdb-pagination-core/sqlite"]
+mssql = ["rdb-pagination-core/mssql"]
+mssql2008 = ["rdb-pagination-core/mssql2008"]
 derive = ["dep:rdb-pagination-derive"]
 
 [package.metadata.docs.rs]

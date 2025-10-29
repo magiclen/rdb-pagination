@@ -19,6 +19,8 @@ serde = { version = "1", features = ["derive"], optional = true }
 serde = ["dep:serde"]
 mysql = []
 sqlite = []
+mssql = []
+mssql2008 = []
 
 [package.metadata.docs.rs]
 all-features = true

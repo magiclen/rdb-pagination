@@ -157,7 +157,7 @@ impl<T: OrderByOptions> PaginationOptions<T> {
 
 #[cfg(feature = "mysql")]
 impl<T: OrderByOptions> PaginationOptions<T> {
-    /// Generate a `LIMIT with OFFSET` clause for MySQL.
+    /// Generate a `LIMIT` with `OFFSET` clause for MySQL.
     ///
     /// If `limit()` is `Some(n)`,
     ///
@@ -178,7 +178,7 @@ impl<T: OrderByOptions> PaginationOptions<T> {
 
 #[cfg(feature = "sqlite")]
 impl<T: OrderByOptions> PaginationOptions<T> {
-    /// Generate a `LIMIT with OFFSET` clause for SQLite.
+    /// Generate a `LIMIT` with `OFFSET` clause for SQLite.
     ///
     /// If `limit()` is `Some(n)`,
     ///
@@ -194,6 +194,89 @@ impl<T: OrderByOptions> PaginationOptions<T> {
     #[inline]
     pub fn to_sqlite_limit_offset<'a>(&self, s: &'a mut String) -> &'a str {
         self.to_sql_limit_offset(s)
+    }
+}
+
+#[cfg(feature = "mssql")]
+impl<T: OrderByOptions> PaginationOptions<T> {
+    /// Generate a `OFFSET` with `FETCH` clause for Microsoft SQL Server.
+    ///
+    /// If `limit()` is `Some(n)` or `offset()` is not zero,
+    ///
+    /// ```sql
+    /// OFFSET <offset()> ROWS [FETCH NEXT <limit()> ROWS ONLY]
+    /// ```
+    #[inline]
+    pub fn to_mssql_limit_offset<'a>(&self, s: &'a mut String) -> &'a str {
+        use std::{fmt::Write, str::from_utf8_unchecked};
+
+        let len = s.len();
+
+        let limit = self.limit();
+
+        let offset = self.offset();
+
+        if let Some(limit) = limit {
+            s.write_fmt(format_args!("OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY")).unwrap();
+        } else if offset > 0 {
+            s.write_fmt(format_args!("OFFSET {offset} ROWS")).unwrap();
+        }
+
+        unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
+    }
+}
+
+#[cfg(feature = "mssql2008")]
+impl<T: OrderByOptions> PaginationOptions<T> {
+    /// Generate a `WHERE` clause for Microsoft SQL Server 2008 and earlier (used for check the row number).
+    ///
+    /// If `limit()` is `Some(n)`,
+    ///
+    /// ```sql
+    /// WHERE [<row_number_column_name>] <= <limit()>
+    /// ```
+    ///
+    /// If `offset()` is not zero,
+    ///
+    /// ```sql
+    /// WHERE [<row_number_column_name>] > <offset()>
+    /// ```
+    ///
+    /// If both above are true,
+    ///
+    /// ```sql
+    /// WHERE [<row_number_column_name>] BETWEEN (<offset() + 1>) AND <offset() + limit()>
+    /// ```
+    #[inline]
+    pub fn to_mssql2008_limit_offset<'a>(
+        &self,
+        row_number_column_name: impl AsRef<str>,
+        s: &'a mut String,
+    ) -> &'a str {
+        use std::{fmt::Write, str::from_utf8_unchecked};
+
+        let row_number_column_name = row_number_column_name.as_ref();
+
+        let len = s.len();
+
+        let offset = self.offset();
+
+        if let Some(limit) = self.limit() {
+            if offset > 0 {
+                s.write_fmt(format_args!(
+                    "WHERE [{row_number_column_name}] BETWEEN {} AND {}",
+                    offset + 1,
+                    offset + limit as u64
+                ))
+                .unwrap();
+            } else {
+                s.write_fmt(format_args!("WHERE [{row_number_column_name}] <= {limit}")).unwrap();
+            }
+        } else if offset > 0 {
+            s.write_fmt(format_args!("WHERE [{row_number_column_name}] > {offset}")).unwrap();
+        }
+
+        unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
     }
 }
 

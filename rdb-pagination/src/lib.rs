@@ -61,6 +61,12 @@ let mut buffer = String::new();
 # #[cfg(feature = "mysql")]
 assert_eq!("LIMIT 20 OFFSET 40", pagination_options.to_mysql_limit_offset(&mut buffer));
 
+# #[cfg(feature = "mssql")]
+assert_eq!("OFFSET 40 ROWS FETCH NEXT 20 ROWS ONLY", pagination_options.to_mssql_limit_offset(&mut buffer));
+
+# #[cfg(feature = "mssql2008")]
+assert_eq!("WHERE [rn] BETWEEN 41 AND 60", pagination_options.to_mssql2008_limit_offset("rn", &mut buffer));
+
 buffer.clear();
 
 let (joins, order_by_components) = pagination_options.order_by.to_sql();

@@ -145,6 +145,92 @@ impl SqlJoin {
     }
 }
 
+#[cfg(any(feature = "mssql", feature = "mssql2008"))]
+impl SqlJoin {
+    fn to_sql_join_clause_ms<'a>(&self, s: &'a mut String) -> &'a str {
+        use std::{fmt::Write, str::from_utf8_unchecked};
+
+        let len = s.len();
+
+        if let Some(real_table_name) = &self.real_table_name {
+            s.write_fmt(format_args!(
+                "LEFT JOIN [{real_table_name}] AS [{other_table_name}] ON \
+                 [{other_table_name}].[{other_column_name}] = \
+                 [{using_table_name}].[{using_column_name}]",
+                other_table_name = self.other_table_name,
+                other_column_name = self.other_column_name,
+                using_table_name = self.using_table_name,
+                using_column_name = self.using_column_name,
+            ))
+            .unwrap()
+        } else {
+            s.write_fmt(format_args!(
+                "LEFT JOIN [{other_table_name}] ON [{other_table_name}].[{other_column_name}] = \
+                 [{using_table_name}].[{using_column_name}]",
+                other_table_name = self.other_table_name,
+                other_column_name = self.other_column_name,
+                using_table_name = self.using_table_name,
+                using_column_name = self.using_column_name,
+            ))
+            .unwrap()
+        }
+
+        unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
+    }
+
+    fn format_sql_join_clauses_ms<'a>(joins: &[SqlJoin], s: &'a mut String) -> &'a str {
+        use std::str::from_utf8_unchecked;
+
+        if joins.is_empty() {
+            return "";
+        }
+
+        let len = s.len();
+
+        for join in joins {
+            join.to_sql_join_clause_ms(s);
+            s.push('\n');
+        }
+
+        unsafe {
+            let len = s.len();
+
+            s.as_mut_vec().truncate(len - 1);
+        }
+
+        unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
+    }
+}
+
+#[cfg(any(feature = "mssql", feature = "mssql2008"))]
+impl SqlJoin {
+    /// Generate a `JOIN` clause for Microsoft SQL Server.
+    ///
+    /// If `real_table_name` exists,
+    ///
+    /// ```sql
+    /// JOIN [<real_table_name>] AS [<other_table_name>] ON [<other_table_name>].[<other_column_name>] = [<using_table_name>].[<using_column_name>]
+    /// ```
+    ///
+    /// or
+    ///
+    /// ```sql
+    /// JOIN [<other_table_name>] ON [<other_table_name>].[<other_column_name>] = [<using_table_name>].[<using_column_name>]
+    /// ```
+    #[inline]
+    pub fn to_mssql_join_clause<'a>(&self, s: &'a mut String) -> &'a str {
+        self.to_sql_join_clause_ms(s)
+    }
+
+    /// Generate `JOIN` clauses for Microsoft SQL Server.
+    ///
+    /// Concatenate a series of `SqlJoin`s with `\n`.
+    #[inline]
+    pub fn format_mssql_join_clauses<'a>(joins: &[SqlJoin], s: &'a mut String) -> &'a str {
+        Self::format_sql_join_clauses_ms(joins, s)
+    }
+}
+
 /// Operators for `SqlJoin`s.
 pub trait SqlJoinsOps {
     /// Insert a `SqlJoin` if it does not exist. Return `Ok(true)` if a new `SqlJoin` has been pushed.

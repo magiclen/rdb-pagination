@@ -27,6 +27,10 @@ jobs:
           - --features serde --features mysql
           - --features sqlite
           - --features serde --features sqlite
+          - --features mssql
+          - --features serde --features mssql
+          - --features mssql2008
+          - --features serde --features mssql2008
     name: Test ${{ matrix.toolchain }} on ${{ matrix.os }} (${{ matrix.features }})
     runs-on: ${{ matrix.os }}
     steps:
@@ -54,6 +58,10 @@ jobs:
           - --features serde --features mysql
           - --features sqlite
           - --features serde --features sqlite
+          - --features mssql
+          - --features serde --features mssql
+          - --features mssql2008
+          - --features serde --features mssql2008
     name: Test ${{ matrix.toolchain }} on ${{ matrix.os }} (${{ matrix.features }})
     runs-on: ${{ matrix.os }}
     steps:
