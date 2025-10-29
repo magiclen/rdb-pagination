@@ -1,9 +1,9 @@
 [package]
 name = "rdb-pagination"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Magic Len <len@magiclen.org>"]
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.68"
 repository = "https://github.com/magiclen/rdb-pagination"
 homepage = "https://magiclen.org/rdb-pagination"
 keywords = ["database", "pagination", "order", "relational", "table"]
@@ -13,7 +13,7 @@ license = "MIT"
 include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 
 [dependencies]
-rdb-pagination-core = { version = "0.3.1", path = "../rdb-pagination-core", default-features = false }
+rdb-pagination-core = { version = "0.3.2", path = "../rdb-pagination-core", default-features = false }
 rdb-pagination-derive = { version = "0.3", path = "../rdb-pagination-derive", default-features = false, optional = true }
 
 [dev-dependencies]
