@@ -19,8 +19,8 @@ proc-macro = true
 rdb-pagination-core = { version = "0.3.3", path = "../rdb-pagination-core", default-features = false }
 
 syn = { version = "2", features = ["full"] }
-quote = "1"
-proc-macro2 = "1"
+quote = "1.0.25"
+proc-macro2 = "1.0.52"
 
 [package.metadata.docs.rs]
 all-features = true
