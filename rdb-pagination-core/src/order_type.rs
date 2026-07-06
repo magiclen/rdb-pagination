@@ -17,11 +17,7 @@ impl OrderType {
     pub(crate) fn from_order_method<T: OrderMethodValue>(order_method: OrderMethod<T>) -> Self {
         debug_assert!(order_method != OrderMethod(T::zero()));
 
-        if order_method > OrderMethod(T::zero()) {
-            Self::Asc
-        } else {
-            Self::Desc
-        }
+        if order_method > OrderMethod(T::zero()) { Self::Asc } else { Self::Desc }
     }
 
     /// Returns the string representation of the order type.

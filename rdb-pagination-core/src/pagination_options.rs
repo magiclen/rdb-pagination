@@ -120,11 +120,7 @@ impl<T: OrderByOptions> PaginationOptions<T> {
     /// Compute the limit for pagination. `None` means **unlimited**.
     #[inline]
     pub const fn limit(&self) -> Option<usize> {
-        if self.items_per_page == 0 {
-            None
-        } else {
-            Some(self.items_per_page)
-        }
+        if self.items_per_page == 0 { None } else { Some(self.items_per_page) }
     }
 }
 
@@ -285,9 +281,9 @@ mod serde_trait {
     use core::{fmt, fmt::Formatter, marker::PhantomData};
 
     use serde::{
+        Deserialize, Deserializer, Serialize, Serializer,
         de::{MapAccess, Visitor},
         ser::SerializeStruct,
-        Deserialize, Deserializer, Serialize, Serializer,
     };
 
     use super::PaginationOptions;

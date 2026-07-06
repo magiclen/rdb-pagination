@@ -1,9 +1,9 @@
 [package]
 name = "rdb-pagination-core"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Magic Len <len@magiclen.org>"]
-edition = "2021"
-rust-version = "1.68"
+edition = "2024"
+rust-version = "1.89"
 repository = "https://github.com/magiclen/rdb-pagination"
 homepage = "https://magiclen.org/rdb-pagination"
 keywords = ["database", "pagination", "order", "relational", "table"]

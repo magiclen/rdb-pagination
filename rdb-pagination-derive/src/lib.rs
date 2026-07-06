@@ -7,16 +7,16 @@ The provided crate offers a procedural macro for defining `OrderByOptions`. See 
 mod common;
 mod panic;
 
-use common::{meta_2_string, Join};
+use common::{Join, meta_2_string};
 use proc_macro::TokenStream;
 use quote::quote;
 use rdb_pagination_core::{Name, OrderBuilder, Relationship};
 use syn::{
+    Data, DeriveInput, Index, Meta, Token,
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
     spanned::Spanned,
-    Data, DeriveInput, Index, Meta, Token,
 };
 
 use crate::common::OrderByOption;

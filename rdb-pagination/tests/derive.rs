@@ -4,7 +4,7 @@
 ))]
 
 use educe::Educe;
-use rdb_pagination::{prelude::*, PaginationOptions, SqlJoin, SqlOrderByComponent};
+use rdb_pagination::{PaginationOptions, SqlJoin, SqlOrderByComponent, prelude::*};
 
 #[test]
 fn component() {

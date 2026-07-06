@@ -120,11 +120,11 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
         {
             // adjust options (check primary and foreign)
             for (table_column, ..) in self.order_options.iter_mut() {
-                if let Some(attr) = self.relationship.relationship.get(&table_column.0) {
-                    if attr.column_name == table_column.1 {
-                        *table_column =
-                            (attr.foreign_table_name.clone(), attr.foreign_column_name.clone());
-                    }
+                if let Some(attr) = self.relationship.relationship.get(&table_column.0)
+                    && attr.column_name == table_column.1
+                {
+                    *table_column =
+                        (attr.foreign_table_name.clone(), attr.foreign_column_name.clone());
                 }
             }
         }

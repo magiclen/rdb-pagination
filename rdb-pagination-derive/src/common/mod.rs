@@ -2,10 +2,10 @@ use proc_macro2::Span;
 use quote::ToTokens;
 use rdb_pagination_core::{Name, TableColumn, TableName};
 use syn::{
+    Expr, Ident, Lit, LitStr, Meta, MetaNameValue, Path, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
-    Expr, Ident, Lit, LitStr, Meta, MetaNameValue, Path, Token,
 };
 
 #[derive(Debug)]
@@ -134,10 +134,10 @@ pub(crate) fn expr_2_two_string_tuple(expr: &Expr) -> syn::Result<(String, Strin
 
 #[inline]
 pub(crate) fn expr_2_unique(expr: &Expr) -> syn::Result<()> {
-    if let Expr::Path(path) = expr {
-        if path.path.is_ident("unique") {
-            return Ok(());
-        }
+    if let Expr::Path(path) = expr
+        && path.path.is_ident("unique")
+    {
+        return Ok(());
     }
 
     Err(syn::Error::new(expr.span(), "expected `unique`"))
@@ -146,13 +146,13 @@ pub(crate) fn expr_2_unique(expr: &Expr) -> syn::Result<()> {
 /// Return `true` if it is `nulls_first`; return `false` if it is `nulls_last`.
 #[inline]
 pub(crate) fn expr_2_nulls_first_or_last(expr: &Expr, after_unique: bool) -> syn::Result<bool> {
-    if let Expr::Path(path) = expr {
-        if let Some(ident) = path.path.get_ident() {
-            match ident.to_string().as_str() {
-                "nulls_first" => return Ok(true),
-                "nulls_last" => return Ok(false),
-                _ => (),
-            }
+    if let Expr::Path(path) = expr
+        && let Some(ident) = path.path.get_ident()
+    {
+        match ident.to_string().as_str() {
+            "nulls_first" => return Ok(true),
+            "nulls_last" => return Ok(false),
+            _ => (),
         }
     }
 

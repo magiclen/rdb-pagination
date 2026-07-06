@@ -84,10 +84,7 @@ impl Pagination {
                 self.total_pages = 1;
             },
             1 => self.total_pages = self.total_items,
-            _ => {
-                self.total_pages =
-                    (self.total_items + (self.items_per_page - 1)) / self.items_per_page
-            },
+            _ => self.total_pages = self.total_items.div_ceil(self.items_per_page),
         }
 
         if self.page < self.total_pages {
