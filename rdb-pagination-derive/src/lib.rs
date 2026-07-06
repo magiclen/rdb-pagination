@@ -234,6 +234,7 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
     Ok(token_stream)
 }
 
+/// Derives `OrderByOptions` for a struct whose fields describe SQL ordering options.
 #[proc_macro_derive(OrderByOptions, attributes(orderByOptions))]
 pub fn order_by_options_derive(input: TokenStream) -> TokenStream {
     struct MyDeriveInput(proc_macro2::TokenStream);
