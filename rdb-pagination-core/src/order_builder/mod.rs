@@ -9,6 +9,7 @@ use crate::{
     SqlOrderByComponent, TableColumn,
 };
 
+/// Hidden builder used by derive-generated code, not a stable application-facing API.
 #[doc(hidden)]
 #[derive(Debug, Clone)]
 pub struct OrderBuilder<T: OrderMethodValue = i8> {
@@ -55,6 +56,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
         Ok(())
     }
 
+    /// Add an option after validation; this method assumes `add_order_option_check` has already accepted the same table-column definition.
     #[inline]
     pub fn add_order_option(
         &mut self,
