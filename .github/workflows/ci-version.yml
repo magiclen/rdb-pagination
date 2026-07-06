@@ -50,7 +50,7 @@ jobs:
           - macos-latest
           - windows-latest
         toolchain:
-          - 1.68
+          - 1.89
         features:
           -
           - --features serde

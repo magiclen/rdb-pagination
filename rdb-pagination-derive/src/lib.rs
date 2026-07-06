@@ -16,7 +16,6 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
-    spanned::Spanned,
 };
 
 use crate::common::OrderByOption;
@@ -40,8 +39,8 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
                         match ident.to_string().as_str() {
                             "name" => {
                                 if table_name.is_some() {
-                                    return Err(syn::Error::new(
-                                        ident.span(),
+                                    return Err(syn::Error::new_spanned(
+                                        ident,
                                         "`name` has been set",
                                     ));
                                 }
@@ -50,29 +49,30 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
 
                                 table_name = Some(name);
                             },
-                            "join" => {
-                                if let Meta::List(list) = meta {
+                            "join" => match meta {
+                                Meta::List(list) => {
                                     let join: Join = list.parse_args()?;
 
                                     join_list.push(join);
-                                } else {
-                                    return Err(syn::Error::new(
-                                        ident.span(),
+                                },
+                                meta => {
+                                    return Err(syn::Error::new_spanned(
+                                        meta,
                                         "`join` should be a list",
                                     ));
-                                }
+                                },
                             },
                             _ => {
-                                return Err(panic::sub_attributes_for_item(path.span()));
+                                return Err(panic::sub_attributes_for_item(path));
                             },
                         }
                     } else {
-                        return Err(panic::sub_attributes_for_item(path.span()));
+                        return Err(panic::sub_attributes_for_item(path));
                     }
                 }
             } else {
-                return Err(syn::Error::new(
-                    path.span(),
+                return Err(syn::Error::new_spanned(
+                    attr,
                     "the `orderByOptions` attribute should be a list",
                 ));
             }
@@ -90,7 +90,7 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
                 join.primary.clone(),
                 join.real_table_name.clone(),
             ) {
-                return Err(syn::Error::new(join.span, error));
+                return Err(syn::Error::new_spanned(&join.tokens, error));
             }
         }
 
@@ -109,8 +109,8 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
 
                         if path.is_ident("orderByOptions") {
                             if has_option {
-                                return Err(syn::Error::new(
-                                    path.span(),
+                                return Err(syn::Error::new_spanned(
+                                    attr,
                                     "`orderByOptions` has been set",
                                 ));
                             }
@@ -121,7 +121,10 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
                                 order_by_option.table_column.clone(),
                                 order_by_option.unique,
                             ) {
-                                return Err(syn::Error::new(order_by_option.span, error));
+                                return Err(syn::Error::new_spanned(
+                                    &order_by_option.tokens,
+                                    error,
+                                ));
                             }
 
                             has_option = true;
@@ -221,8 +224,8 @@ fn derive_input_handler(ast: DeriveInput) -> syn::Result<proc_macro2::TokenStrea
                 token_stream.extend(order_by_options_impl);
             }
         } else {
-            return Err(syn::Error::new(
-                ast.ident.span(),
+            return Err(syn::Error::new_spanned(
+                ast.ident,
                 "should use a struct to implement `OrderByOptions`",
             ));
         }

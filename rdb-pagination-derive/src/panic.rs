@@ -3,7 +3,7 @@ use std::{
     fmt::{Display, Formatter},
 };
 
-use proc_macro2::Span;
+use quote::ToTokens;
 
 #[derive(Debug)]
 struct DisplayStringSlice<'a>(&'a [&'static str]);
@@ -21,9 +21,9 @@ impl Display for DisplayStringSlice<'_> {
 }
 
 #[inline]
-pub(crate) fn sub_attributes_for_item(span: Span) -> syn::Error {
-    syn::Error::new(
-        span,
+pub(crate) fn sub_attributes_for_item(tokens: impl ToTokens) -> syn::Error {
+    syn::Error::new_spanned(
+        tokens,
         format!(
             "available sub-attributes for the `orderByOptions` attribute:{}",
             DisplayStringSlice(&["name", "join"])

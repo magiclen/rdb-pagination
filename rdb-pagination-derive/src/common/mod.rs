@@ -1,11 +1,9 @@
-use proc_macro2::Span;
 use quote::ToTokens;
 use rdb_pagination_core::{Name, TableColumn, TableName};
 use syn::{
     Expr, Ident, Lit, LitStr, Meta, MetaNameValue, Path, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    spanned::Spanned,
 };
 
 #[derive(Debug)]
@@ -13,21 +11,21 @@ pub(crate) struct Join {
     pub(crate) foreign:         TableColumn,
     pub(crate) primary:         TableColumn,
     pub(crate) real_table_name: Option<TableName>,
-    pub(crate) span:            Span,
+    pub(crate) tokens:          proc_macro2::TokenStream,
 }
 
 impl Parse for Join {
     #[inline]
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let span = input.span();
-
         let args = Punctuated::<Expr, Token![,]>::parse_terminated(input)?;
 
         let args_len = args.len();
 
         if args_len != 2 && args_len != 3 {
-            return Err(syn::Error::new(input.span(), "expected 2 or 3 argumenets"));
+            return Err(syn::Error::new_spanned(args, "expected 2 or 3 arguments"));
         }
+
+        let tokens = args.to_token_stream();
 
         let foreign = expr_2_two_string_tuple(&args[0])?;
         let primary = expr_2_two_string_tuple(&args[1])?;
@@ -37,7 +35,7 @@ impl Parse for Join {
             foreign: (Name::Dynamic(foreign.0), Name::Dynamic(foreign.1)),
             primary: (Name::Dynamic(primary.0), Name::Dynamic(primary.1)),
             real_table_name: real_table_name.map(Name::Dynamic),
-            span,
+            tokens,
         })
     }
 }
@@ -48,21 +46,21 @@ pub(crate) struct OrderByOption {
     pub(crate) unique:              bool,
     /// `Some(true)` means **NULL FIRST**; `Some(false)` means **NULL LAST**.
     pub(crate) nulls_first_or_last: Option<bool>,
-    pub(crate) span:                Span,
+    pub(crate) tokens:              proc_macro2::TokenStream,
 }
 
 impl Parse for OrderByOption {
     #[inline]
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let span = input.span();
-
         let args = Punctuated::<Expr, Token![,]>::parse_terminated(input)?;
 
         let args_len = args.len();
 
         if !(1..=3).contains(&args_len) {
-            return Err(syn::Error::new(input.span(), "expected 1, 2 or 3 arguments"));
+            return Err(syn::Error::new_spanned(args, "expected 1, 2 or 3 arguments"));
         }
+
+        let tokens = args.to_token_stream();
 
         let table_column = expr_2_two_string_tuple(&args[0])?;
 
@@ -87,7 +85,7 @@ impl Parse for OrderByOption {
             table_column: (Name::Dynamic(table_column.0), Name::Dynamic(table_column.1)),
             unique,
             nulls_first_or_last,
-            span,
+            tokens,
         })
     }
 }
@@ -113,14 +111,14 @@ pub(crate) fn expr_2_string(expr: &Expr) -> syn::Result<String> {
         _ => (),
     }
 
-    Err(syn::Error::new(expr.span(), "expected an Ident"))
+    Err(syn::Error::new_spanned(expr, "expected an Ident"))
 }
 
 #[inline]
 pub(crate) fn expr_2_two_string_tuple(expr: &Expr) -> syn::Result<(String, String)> {
     if let Expr::Tuple(tuple) = expr {
         if tuple.elems.len() != 2 {
-            return Err(syn::Error::new(tuple.span(), "expected 2 elements"));
+            return Err(syn::Error::new_spanned(tuple, "expected 2 elements"));
         }
 
         let s1 = expr_2_string(&tuple.elems[0])?;
@@ -128,7 +126,7 @@ pub(crate) fn expr_2_two_string_tuple(expr: &Expr) -> syn::Result<(String, Strin
 
         Ok((s1, s2))
     } else {
-        Err(syn::Error::new(expr.span(), "expected a tuple"))
+        Err(syn::Error::new_spanned(expr, "expected a tuple"))
     }
 }
 
@@ -140,7 +138,7 @@ pub(crate) fn expr_2_unique(expr: &Expr) -> syn::Result<()> {
         return Ok(());
     }
 
-    Err(syn::Error::new(expr.span(), "expected `unique`"))
+    Err(syn::Error::new_spanned(expr, "expected `unique`"))
 }
 
 /// Return `true` if it is `nulls_first`; return `false` if it is `nulls_last`.
@@ -162,7 +160,7 @@ pub(crate) fn expr_2_nulls_first_or_last(expr: &Expr, after_unique: bool) -> syn
         "expected `unique`, `nulls_first` or `nulls_last`"
     };
 
-    Err(syn::Error::new(expr.span(), message))
+    Err(syn::Error::new_spanned(expr, message))
 }
 
 #[inline]
@@ -181,8 +179,8 @@ pub(crate) fn meta_name_value_2_string(name_value: &MetaNameValue) -> syn::Resul
         _ => (),
     }
 
-    Err(syn::Error::new(
-        name_value.value.span(),
+    Err(syn::Error::new_spanned(
+        &name_value.value,
         format!("expected `{path} = Ident`", path = path_to_string(&name_value.path)),
     ))
 }
@@ -201,8 +199,8 @@ pub(crate) fn meta_2_string(meta: &Meta) -> syn::Result<String> {
         _ => (),
     }
 
-    Err(syn::Error::new(
-        meta.span(),
+    Err(syn::Error::new_spanned(
+        meta,
         format!("expected `{path} = Ident` or `{path}(Ident)`", path = path_to_string(meta.path())),
     ))
 }
