@@ -74,7 +74,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
     }
 
     pub fn build(mut self) -> (Vec<SqlJoin>, Vec<SqlOrderByComponent>) {
-        self.order_options.sort_by(|(_, _, _, a), (_, _, _, b)| a.0.abs().cmp(&b.0.abs()));
+        self.order_options.sort_by_key(|(_, _, _, a)| a.0.abs());
 
         {
             // remove unnecessary options
@@ -148,9 +148,7 @@ impl<T: OrderMethodValue> OrderBuilder<T> {
         for (table_name, column_name, null_strategy, order_type) in v {
             let related_table_names = self.relationship.get_related_tables(&table_name);
 
-            for related_table_name in
-                related_table_names.into_iter().rev().chain([&table_name].into_iter())
-            {
+            for related_table_name in related_table_names.into_iter().rev().chain([&table_name]) {
                 if joined.contains(related_table_name) {
                     continue;
                 }
