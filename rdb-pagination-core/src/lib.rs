@@ -2,7 +2,9 @@
 # RDB Pagination Core
 
 SQL query extension library for handling pagination and sorting in relational databases. See the [`rdb-pagination`](https://crates.io/crates/rdb-pagination) crate.
- */
+*/
+
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod order_builder;
 mod order_by_options;

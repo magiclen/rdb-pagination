@@ -4,6 +4,8 @@
 The provided crate offers a procedural macro for defining `OrderByOptions`. See the [`rdb-pagination`](https://crates.io/crates/rdb-pagination) crate.
 */
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 mod common;
 mod panic;
 
