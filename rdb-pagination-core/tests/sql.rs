@@ -92,6 +92,16 @@ fn pagination() {
 
     assert_eq!(3, pagination.get_total_pages());
     assert_eq!(1, pagination.get_page());
+
+    let pagination = Pagination::new().items_per_page(20).total_items(0).page(2);
+
+    assert_eq!(0, pagination.get_total_pages());
+    assert_eq!(1, pagination.get_page());
+
+    let pagination = Pagination::new().items_per_page(1).total_items(10).page(5).total_items(0);
+
+    assert_eq!(0, pagination.get_total_pages());
+    assert_eq!(1, pagination.get_page());
 }
 
 #[test]

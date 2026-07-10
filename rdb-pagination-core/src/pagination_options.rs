@@ -9,7 +9,11 @@ use crate::OrderByOptions;
 /// #
 /// let options = PaginationOptions::new().page(1).items_per_page(20);
 /// ```
+///
+/// With the `serde` feature, this type implements each serde trait when `T` implements the same trait.
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 pub struct PaginationOptions<T: OrderByOptions = ()> {
     /// Page number.
     ///
@@ -273,88 +277,5 @@ impl<T: OrderByOptions> PaginationOptions<T> {
         }
 
         unsafe { from_utf8_unchecked(&s.as_bytes()[len..]) }
-    }
-}
-
-#[cfg(feature = "serde")]
-mod serde_trait {
-    use core::{fmt, fmt::Formatter, marker::PhantomData};
-
-    use serde::{
-        Deserialize, Deserializer, Serialize, Serializer,
-        de::{MapAccess, Visitor},
-        ser::SerializeStruct,
-    };
-
-    use super::PaginationOptions;
-    use crate::OrderByOptions;
-
-    impl<'de, T: OrderByOptions + Deserialize<'de>> Deserialize<'de> for PaginationOptions<T> {
-        #[inline]
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>, {
-            struct MyVisitor<T>(PhantomData<T>);
-
-            impl<'de, T: OrderByOptions + Deserialize<'de>> Visitor<'de> for MyVisitor<T> {
-                type Value = PaginationOptions<T>;
-
-                #[inline]
-                fn expecting(&self, f: &mut Formatter) -> fmt::Result {
-                    f.write_str("a map of options")
-                }
-
-                #[inline]
-                fn visit_map<V>(self, mut v: V) -> Result<Self::Value, V::Error>
-                where
-                    V: MapAccess<'de>, {
-                    let mut page: Option<usize> = None;
-                    let mut items_per_page: Option<usize> = None;
-                    let mut order_by: Option<T> = None;
-
-                    while let Some(key) = v.next_key::<&str>()? {
-                        match key {
-                            "page" => {
-                                page = Some(v.next_value()?);
-                            },
-                            "items_per_page" => {
-                                items_per_page = Some(v.next_value()?);
-                            },
-                            "order_by" => {
-                                order_by = Some(v.next_value()?);
-                            },
-                            _ => continue,
-                        }
-                    }
-
-                    let page = page.unwrap_or(1);
-                    let items_per_page = items_per_page.unwrap_or(0);
-                    let order_by = order_by.unwrap_or_default();
-
-                    Ok(PaginationOptions {
-                        page,
-                        items_per_page,
-                        order_by,
-                    })
-                }
-            }
-
-            deserializer.deserialize_map(MyVisitor(PhantomData))
-        }
-    }
-
-    impl<T: OrderByOptions + Serialize> Serialize for PaginationOptions<T> {
-        #[inline]
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer, {
-            let mut s = serializer.serialize_struct("PaginationOptions", 3)?;
-
-            s.serialize_field("page", &self.page)?;
-            s.serialize_field("items_per_page", &self.items_per_page)?;
-            s.serialize_field("order_by", &self.order_by)?;
-
-            s.end()
-        }
     }
 }

@@ -87,6 +87,48 @@ assert_eq!(
 # }
 ```
 
+## Serde Support
+
+Enable the `serde` feature and add `serde` as a direct dependency with its `derive` feature to serialize and deserialize ordering options.
+
+```toml
+[dependencies]
+rdb-pagination = { version = "0.3", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+```
+
+`Pagination` implements serialization and validated deserialization directly, while `PaginationOptions<T>` implements each serde trait only when `T` implements the same trait.
+
+Application-defined ordering structs must derive `serde::Serialize` and `serde::Deserialize`, while each `OrderMethod` is represented by its inner integer value.
+
+```rust
+use educe::Educe;
+use rdb_pagination::{PaginationOptions, prelude::*};
+
+# #[cfg(all(feature = "derive", feature = "serde"))]
+# {
+#[derive(Debug, Clone, Educe, OrderByOptions, serde::Serialize, serde::Deserialize)]
+#[educe(Default)]
+#[orderByOptions(name = user)]
+pub struct UserOrderBy {
+    #[orderByOptions((user, id), unique)]
+    pub id: OrderMethod,
+}
+
+let options = PaginationOptions::default().order_by(UserOrderBy {
+    id: OrderMethod::from(-1),
+});
+let json = serde_json::to_string(&options).unwrap();
+
+assert_eq!(r#"{"page":1,"items_per_page":0,"order_by":{"id":-1}}"#, json);
+
+let options: PaginationOptions<UserOrderBy> = serde_json::from_str(&json).unwrap();
+
+assert_eq!(OrderMethod::from(-1), options.order_by.id);
+# }
+```
+
 ## Utoipa Support
 
 Enable the `utoipa` feature and add `utoipa` as a direct dependency to derive `utoipa::ToSchema` for ordering options.

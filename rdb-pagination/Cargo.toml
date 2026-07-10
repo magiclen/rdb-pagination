@@ -1,6 +1,6 @@
 [package]
 name = "rdb-pagination"
-version = "0.3.4"
+version = "0.3.5"
 authors = ["Magic Len <len@magiclen.org>"]
 edition = "2024"
 rust-version = "1.89"
@@ -13,11 +13,12 @@ license = "MIT"
 include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 
 [dependencies]
-rdb-pagination-core = { version = "0.3.4", path = "../rdb-pagination-core", default-features = false }
-rdb-pagination-derive = { version = "0.3.4", path = "../rdb-pagination-derive", default-features = false, optional = true }
+rdb-pagination-core = { version = "0.3.5", path = "../rdb-pagination-core", default-features = false }
+rdb-pagination-derive = { version = "0.3.5", path = "../rdb-pagination-derive", default-features = false, optional = true }
 
 [dev-dependencies]
 educe = { version = "0.7", default-features = false, features = ["default"] }
+serde = { version = "1.0.103", features = ["derive"] }
 serde_json = "1.0.50"
 utoipa = { version = "5.5", default-features = false, features = ["macros"] }
 

@@ -59,7 +59,11 @@ impl OrderMethodValue for i16 {
 /// * **> 0**: Ascending
 /// * **< 0**: Descending
 /// * Absolute value indicates priority; the smaller the value, the more important it is.
+///
+/// With the `serde` feature, this type is serialized as its inner integer value.
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct OrderMethod<T: OrderMethodValue = i8>(
     #[cfg_attr(feature = "utoipa", schema(inline))] pub T,
