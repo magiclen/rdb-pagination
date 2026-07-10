@@ -39,6 +39,7 @@ jobs:
         features:
           - 
           - --features serde
+          - --features utoipa
           - --features mysql
           - --features serde --features mysql
           - --features sqlite
@@ -70,6 +71,7 @@ jobs:
         features:
           -
           - --features serde
+          - --features utoipa
           - --features mysql
           - --features serde --features mysql
           - --features sqlite

@@ -60,7 +60,10 @@ impl OrderMethodValue for i16 {
 /// * **< 0**: Descending
 /// * Absolute value indicates priority; the smaller the value, the more important it is.
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct OrderMethod<T: OrderMethodValue = i8>(pub T);
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
+pub struct OrderMethod<T: OrderMethodValue = i8>(
+    #[cfg_attr(feature = "utoipa", schema(inline))] pub T,
+);
 
 impl<T: OrderMethodValue> From<T> for OrderMethod<T> {
     #[inline]

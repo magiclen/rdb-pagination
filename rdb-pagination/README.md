@@ -79,6 +79,38 @@ assert_eq!(
 );
 ```
 
+## Utoipa Support
+
+Enable the `utoipa` feature and add `utoipa` as a direct dependency to derive `utoipa::ToSchema` for ordering options.
+
+```toml
+[dependencies]
+rdb-pagination = { version = "0.3", features = ["utoipa"] }
+utoipa = "5"
+```
+
+Struct and field documentation is included in the generated OpenAPI schema, and supported `#[schema(...)]` attributes can provide additional customization.
+
+```rust
+use educe::Educe;
+use rdb_pagination::prelude::*;
+
+/// Options for ordering users.
+#[derive(Debug, Clone, Educe, OrderByOptions, utoipa::ToSchema)]
+#[educe(Default)]
+#[orderByOptions(name = user)]
+pub struct UserOrderBy {
+    /// Order users by their identifier.
+    #[educe(Default = 102)]
+    #[orderByOptions((user, id), unique)]
+    pub id:   OrderMethod,
+    /// Order users by their display name.
+    #[educe(Default = 101)]
+    #[orderByOptions((user, name), unique)]
+    pub name: OrderMethod,
+}
+```
+
 ## Crates.io
 
 https://crates.io/crates/rdb-pagination

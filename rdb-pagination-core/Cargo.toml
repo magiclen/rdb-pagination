@@ -14,9 +14,11 @@ include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true }
+utoipa = { version = "5", default-features = false, features = ["macros"], optional = true }
 
 [features]
 serde = ["dep:serde"]
+utoipa = ["dep:utoipa"]
 mysql = []
 sqlite = []
 mssql = []
